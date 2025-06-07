@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABA Token Board</title>
+    <!-- Tailwind CSS CDN for responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tone.js CDN for programmatic sound generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <!-- Confetti library CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome for music icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Default background for the app, will change to gold on completion */
+            background-color: #e0f2f7; /* Light blue-green */
+            color: #2c3e50; /* Dark text */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            transition: background-color 0.5s ease-in-out; /* Smooth transition for gold theme */
+        }
+
+        /* Base styles for the board and tokens */
+        #tokenBoard, .token-slot {
+            transition: all 0.5s ease-in-out; /* Smooth transitions for visual changes */
+        }
+
+        /* Gold theme for completion */
+        body.gold-theme {
+            background-color: #FFD700; /* Gold background */
+        }
+        .token-slot.gold-theme {
+            background-color: #DAA520 !important; /* Darker gold for slots */
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), inset 0 0 10px rgba(255, 215, 0, 0.5); /* Glowing effect */
+        }
+        .token-slot.gold-theme .token-icon {
+            text-shadow: 0 0 8px #FFD700; /* Text shadow for gold icon */
+            animation: pulse-gold 1s infinite alternate; /* Gentle pulse for gold icons */
+        }
+        @keyframes pulse-gold {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        #completionMessage {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        #completionMessage.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Custom styles for accessibility and visual consistency */
+        button:disabled {
+            cursor: not-allowed;
+        }
+        /* Make empty slots visually distinct and clickable */
+        .token-slot:not(.has-token) {
+            cursor: pointer;
+            border-style: dashed; /* Dotted border for empty slots */
+            opacity: 0.7;
+            /* Add hover effect for empty slots */
+            @apply hover:scale-105 hover:border-blue-400;
+        }
+        /* Style for slots with tokens */
+        .token-slot.has-token {
+            cursor: default;
+            border-style: solid;
+            opacity: 1;
+        }
+        /* Ensure tokens inside slots don't overflow */
+        .token-slot .token-icon {
+            line-height: 1; /* Prevent extra space around emojis */
+            font-size: 4rem; /* Base size */
+            @apply sm:text-5xl md:text-6xl; /* Responsive scaling */
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen p-4 sm:p-6 md:p-8">
+
+    <!-- Header Section -->
+    <header class="w-full text-center mb-6 sm:mb-8">
+        <!-- Child Name Input Section -->
+        <div id="childNameSection" class="mb-4 p-4 bg-white rounded-xl shadow-lg border border-gray-200 mx-auto max-w-sm">
+            <label for="childNameInput" class="block text-lg font-medium text-gray-700 mb-2">Child's Name:</label>
+            <input type="text" id="childNameInput" placeholder="Enter child's name" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm text-gray-800" />
+        </div>
+        <button id="editNameBtn" class="px-4 py-2 bg-blue-500 text-white font-bold rounded-xl shadow-md hover:bg-blue-600 transition transform hover:scale-105 mb-4 hidden" aria-label="Edit child's name">Edit Name</button>
+
+        <h1 id="appTitle" class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500 rounded-xl py-2 px-4 shadow-lg">
+            My Token Board
+        </h1>
+        <p id="tokenCount" class="text-xl sm:text-2xl mt-4 font-semibold text-gray-700">Tokens earned: 0/5</p>
+    </header>
+
+    <!-- Main Content Area: Token Board and Controls -->
+    <main class="flex flex-col items-center flex-grow w-full max-w-4xl px-4">
+        <!-- Reward Theme Selector -->
+        <div class="mb-8 p-4 bg-white rounded-xl shadow-lg border border-gray-200">
+            <label for="rewardTheme" class="block text-lg font-medium text-gray-700 mb-2">Choose Reward:</label>
+            <select id="rewardTheme" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">
+                <option value="spider-man">Spider Man 🕷️</option>
+                <option value="fire-truck">Fire Truck 🚒</option>
+                <option value="space-ship">Space Ship 🚀</option>
+                <option value="luxury-car">Luxury Car 🏎️</option>
+                <option value="dinosaur">Dinosaur 🦖</option>
+                <option value="unicorn">Unicorn 🦄</option>
+                <option value="robot">Robot 🤖</option>
+                <option value="rocket">Rocket 🚀</option>
+            </select>
+        </div>
+
+        <!-- Token Board -->
+        <div id="tokenBoard" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 p-6 bg-gradient-to-br from-blue-300 to-green-300 rounded-2xl shadow-xl w-full max-w-lg md:max-w-full">
+            <!-- Token slots will be dynamically generated here -->
+            <div id="tokenSlot1" class="token-slot flex items-center justify-center bg-blue-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-blue-200" role="button" tabindex="0" aria-label="Add token to slot 1"></div>
+            <div id="tokenSlot2" class="token-slot flex items-center justify-center bg-green-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-green-200" role="button" tabindex="0" aria-label="Add token to slot 2"></div>
+            <div id="tokenSlot3" class="token-slot flex items-center justify-center bg-blue-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-blue-200" role="button" tabindex="0" aria-label="Add token to slot 3"></div>
+            <div id="tokenSlot4" class="token-slot flex items-center justify-center bg-green-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-green-200" role="button" tabindex="0" aria-label="Add token to slot 4"></div>
+            <div id="tokenSlot5" class="token-slot flex items-center justify-center bg-blue-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-blue-200" role="button" tabindex="0" aria-label="Add token to slot 5"></div>
+        </div>
+
+        <!-- Completion Message -->
+        <div id="completionMessage" class="mt-8 text-3xl sm:text-4xl font-extrabold text-gray-800 bg-yellow-300 p-4 rounded-xl shadow-lg border border-yellow-400">
+            🎉 Earned time achieved! 🎉
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="mt-8 flex space-x-4">
+            <button id="toggleMusicBtn" class="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl shadow-md hover:bg-purple-600 transition transform hover:scale-105 flex items-center justify-center" aria-label="Toggle background music">
+                <i id="musicIcon" class="fas fa-volume-mute mr-2"></i> Toggle Music
+            </button>
+            <button id="resetBoardBtn" class="px-6 py-3 bg-gray-500 text-white font-bold rounded-xl shadow-md hover:bg-gray-600 transition transform hover:scale-105" aria-label="Reset the token board">
+                Reset Board
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="w-full text-center mt-8 text-gray-600 text-sm">
+        <p>Made with 💙 for ABA</p>
+        <p>Created by Dakota Rain Lock</p>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const childNameInput = document.getElementById('childNameInput');
+        const appTitle = document.getElementById('appTitle');
+        const childNameSection = document.getElementById('childNameSection'); // Container for name input
+        const editNameBtn = document.getElementById('editNameBtn'); // New edit name button
+        const tokenBoard = document.getElementById('tokenBoard');
+        const tokenSlots = Array.from({ length: 5 }, (_, i) => document.getElementById(`tokenSlot${i + 1}`));
+        const resetBoardBtn = document.getElementById('resetBoardBtn');
+        const rewardThemeSelector = document.getElementById('rewardTheme');
+        const completionMessage = document.getElementById('completionMessage');
+        const tokenCountDisplay = document.getElementById('tokenCount');
+        const body = document.body; // Reference to the body for theme changes
+        const toggleMusicBtn = document.getElementById('toggleMusicBtn');
+        const musicIcon = document.getElementById('musicIcon');
+
+        // --- State Variables ---
+        let earnedTokens = 0;
+        const maxTokens = 5;
+        let isMusicPlaying = false; // Track music state
+        const rewardEmojis = {
+            'spider-man': '🕷️',
+            'fire-truck': '�',
+            'space-ship': '🚀',
+            'luxury-car': '🏎️',
+            'dinosaur': '🦖',
+            'unicorn': '🦄',
+            'robot': '🤖',
+            'rocket': '🚀'
+        };
+
+        // --- Audio Synthesizers (Tone.js) ---
+        // Pop sound (subtle percussive click)
+        const popSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "square" }, // A bit sharper
+            envelope: {
+                attack: 0.001,
+                decay: 0.05,
+                sustain: 0,
+                release: 0.05
+            }
+        }).toDestination();
+
+        // Dopamine hit "ding" sound
+        const dingSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" }, // Smooth, bell-like
+            envelope: {
+                attack: 0.01,
+                decay: 0.2,
+                sustain: 0,
+                release: 0.3
+            }
+        }).toDestination();
+
+        // Complex synth for 'gold chime' sound
+        const goldChimeSynth = new Tone.Sampler({
+            urls: {
+                "C4": "https://tonejs.github.io/audio/salamander/808_A1.mp3", // Using a simple sample for chime effect
+            },
+            onload: () => console.log('Chime sample loaded.'),
+        }).toDestination();
+
+
+        // --- Enhanced "Song of Healing" Melody (Tone.js) ---
+        const healingMelodySequenceNotes = [
+            // Phrase 1 (D minor)
+            { time: '0:0:0', note: 'D4', duration: '4n' }, { time: '0:0:1', note: 'A3', duration: '4n' },
+            { time: '0:0:2', note: 'G3', duration: '4n' }, { time: '0:0:3', note: 'D4', duration: '4n' },
+            { time: '0:1:0', note: 'A3', duration: '4n' }, { time: '0:1:1', note: 'G3', duration: '4n' },
+            { time: '0:1:2', note: 'D4', duration: '4n' }, { time: '0:1:3', note: 'A3', duration: '4n' },
+
+            // Phrase 2 (C minor relative)
+            { time: '0:2:0', note: 'C4', duration: '4n' }, { time: '0:2:1', note: 'G3', duration: '4n' },
+            { time: '0:2:2', note: 'F3', duration: '4n' }, { time: '0:2:3', note: 'C4', duration: '4n' },
+            { time: '0:3:0', note: 'G3', duration: '4n' }, { time: '0:3:1', note: 'F3', duration: '4n' },
+            { time: '0:3:2', note: 'C4', duration: '4n' }, { time: '0:3:3', note: 'G3', duration: '4n' },
+
+            // Phrase 3 (Back to D minor, slightly varied)
+            { time: '0:4:0', note: 'D4', duration: '4n' }, { time: '0:4:1', note: 'A3', duration: '4n' },
+            { time: '0:4:2', note: 'G3', duration: '4n' }, { time: '0:4:3', note: 'D4', duration: '4n' },
+            { time: '0:5:0', note: 'A3', duration: '4n' }, { time: '0:5:1', note: 'G3', duration: '4n' },
+            { time: '0:5:2', note: 'D4', duration: '4n' }, { time: '0:5:3', note: 'A3', duration: '4n' },
+
+            // Phrase 4 (E-flat major/minor feel)
+            { time: '0:6:0', note: 'Eb4', duration: '4n' }, { time: '0:6:1', note: 'Bb3', duration: '4n' },
+            { time: '0:6:2', note: 'Ab3', duration: '4n' }, { time: '0:6:3', note: 'Eb4', duration: '4n' },
+            { time: '0:7:0', note: 'Bb3', duration: '4n' }, { time: '0:7:1', note: 'Ab3', duration: '4n' },
+            { time: '0:7:2', note: 'Eb4', duration: '4n' }, { time: '0:7:3', note: 'Bb3', duration: '4n' },
+
+            // Phrase 5 (Resolution back to D minor for loop)
+            { time: '0:8:0', note: 'D4', duration: '2n' },
+            { time: '0:8:2', note: 'G4', duration: '2n' },
+            { time: '0:9:0', note: 'A4', duration: '1n' },
+            { time: '0:10:0', note: 'D5', duration: '1n' } // Higher D for final resolution
+        ];
+
+        const healingMelodySynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" }, // Smooth, clear tone
+            envelope: {
+                attack: 0.1,
+                decay: 0.5,
+                sustain: 0.2,
+                release: 1
+            }
+        }).toDestination();
+
+        const healingSequence = new Tone.Sequence(
+            (time, noteObj) => {
+                healingMelodySynth.triggerAttackRelease(noteObj.note, noteObj.duration, time);
+            },
+            healingMelodySequenceNotes
+        );
+        healingSequence.loop = true; // Loop the sequence indefinitely
+        Tone.Transport.bpm.value = 100; // Tempo setting
+        Tone.Transport.loop = false; // IMPORTANT: Let the sequence manage its own loop, not the global transport.
+        // Tone.Transport.start() will now be called by the toggleMusic function.
+
+
+        // --- Confetti Configuration ---
+        const tokenConfetti = (originX, originY, colors) => {
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { x: originX, y: originY },
+                colors: colors
+            });
+        };
+
+        const completionConfetti = () => {
+            const duration = 15 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            const colors = ['#FFD700', '#DAA520', '#B8860B']; // Gold shades
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: colors }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: colors }));
+            }, 250);
+        };
+
+
+        // --- Functions ---
+
+        /**
+         * Initializes the token board, setting all tokens to empty and resetting visuals.
+         */
+        function initializeBoard() {
+            earnedTokens = 0;
+            tokenSlots.forEach((slot, index) => {
+                slot.innerHTML = ''; // Clear any emoji
+                // Reset background colors to original blue/green gradient classes
+                if (index % 2 === 0) { // Even slots (0, 2, 4)
+                    slot.className = 'token-slot flex items-center justify-center bg-blue-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-blue-200';
+                } else { // Odd slots (1, 3)
+                    slot.className = 'token-slot flex items-center justify-center bg-green-100 text-6xl rounded-full aspect-square shadow-inner border-2 border-green-200';
+                }
+                slot.classList.add('cursor-pointer', 'border-dashed', 'opacity-70', 'hover:scale-105', 'hover:border-blue-400'); // Re-enable empty slot styling
+                slot.classList.remove('gold-theme', 'has-token'); // Ensure gold theme and has-token are removed
+                slot.setAttribute('aria-label', `Add token to slot ${index + 1}`); // Restore aria-label
+                slot.setAttribute('tabindex', '0'); // Make focusable
+            });
+            updateTokenCountDisplay();
+            completionMessage.classList.remove('show');
+            body.classList.remove('gold-theme'); // Remove gold body theme
+        }
+
+        /**
+         * Updates the display of earned tokens.
+         */
+        function updateTokenCountDisplay() {
+            tokenCountDisplay.textContent = `Tokens earned: ${earnedTokens}/${maxTokens}`;
+        }
+
+        /**
+         * Updates the app title based on the child's name input.
+         */
+        function updateAppTitle() {
+            let name = childNameInput.value.trim();
+            if (name) {
+                appTitle.textContent = `${name}'s Token Board`;
+                localStorage.setItem('childName', name); // Save to local storage
+            } else {
+                appTitle.textContent = 'My Token Board';
+                localStorage.removeItem('childName'); // Remove from local storage if empty
+            }
+        }
+
+        /**
+         * Function to toggle visibility of name input section.
+         * Called when input blurs or edit button is clicked.
+         */
+        function toggleNameInputVisibility() {
+            if (childNameInput.value.trim() && childNameInput.checkValidity()) { // Check if name is entered and valid
+                childNameSection.classList.add('hidden'); // Hide input
+                editNameBtn.classList.remove('hidden'); // Show edit button
+            } else {
+                childNameSection.classList.remove('hidden'); // Show input
+                editNameBtn.classList.add('hidden'); // Hide edit button
+            }
+        }
+
+        /**
+         * Adds a token to the board and triggers feedback.
+         * This function is now called by clicking any empty token slot.
+         */
+        function addToken() {
+            if (earnedTokens < maxTokens) {
+                const currentSlot = tokenSlots[earnedTokens]; // Always get the NEXT empty slot
+                const selectedEmoji = rewardEmojis[rewardThemeSelector.value];
+
+                currentSlot.innerHTML = `<span class="token-icon transition-transform transform scale-0 opacity-0">${selectedEmoji}</span>`;
+                // Animate the token appearing
+                setTimeout(() => {
+                    currentSlot.querySelector('.token-icon').classList.add('scale-100', 'opacity-100');
+                }, 50); // Small delay for animation
+
+                // Play both sounds simultaneously
+                popSynth.triggerAttackRelease("C4", "8n"); // Subtle pop sound
+                dingSynth.triggerAttackRelease("G5", "16n"); // Higher pitch ding for dopamine hit
+
+                // Trigger confetti at the token's position
+                const rect = currentSlot.getBoundingClientRect();
+                const originX = (rect.left + rect.width / 2) / window.innerWidth;
+                const originY = (rect.top + rect.height / 2) / window.innerHeight;
+                tokenConfetti(originX, originY, (earnedTokens % 2 === 0) ? ['#3B82F6', '#1E40AF'] : ['#10B981', '#065F46']); // Blue or Green confetti
+
+                currentSlot.classList.remove('cursor-pointer', 'border-dashed', 'opacity-70', 'hover:scale-105', 'hover:border-blue-400');
+                currentSlot.classList.add('has-token'); // Mark slot as having a token
+                currentSlot.removeAttribute('aria-label'); // Remove aria-label once filled
+                currentSlot.removeAttribute('tabindex'); // Make non-focusable once filled
+
+                earnedTokens++;
+                updateTokenCountDisplay();
+
+                if (earnedTokens === maxTokens) {
+                    triggerCompletion();
+                }
+            }
+        }
+
+        /**
+         * Triggers the completion celebration.
+         */
+        function triggerCompletion() {
+            completionMessage.classList.add('show');
+            body.classList.add('gold-theme'); // Apply gold body theme
+
+            // Change all tokens to gold theme
+            tokenSlots.forEach(slot => {
+                slot.classList.add('gold-theme');
+            });
+
+            // Play celebratory chime sound
+            goldChimeSynth.triggerAttackRelease("C5", "1n"); // A long, sustained chime
+
+            // Trigger gold confetti
+            completionConfetti();
+        }
+
+        /**
+         * Toggles the background music on/off.
+         */
+        async function toggleMusic() {
+            // Ensure the audio context is active. This *must* be triggered by a user interaction.
+            if (Tone.context.state !== 'running') {
+                await Tone.start();
+                console.log('Audio context started by music toggle button.');
+            }
+
+            if (isMusicPlaying) {
+                // Stop music
+                healingSequence.stop(); // Stop the sequence directly
+                Tone.Transport.stop(); // Stop the global transport
+                musicIcon.classList.replace('fa-music', 'fa-volume-mute');
+                isMusicPlaying = false;
+                console.log('Music stopped.');
+            } else {
+                // Start music
+                Tone.Transport.start(); // Start the global transport
+                healingSequence.start(0); // Schedule sequence to start at the beginning of the transport timeline
+                musicIcon.classList.replace('fa-volume-mute', 'fa-music');
+                isMusicPlaying = true;
+                console.log('Music started.');
+            }
+        }
+
+        // --- Event Listeners ---
+        // Make each token slot clickable to add a token
+        tokenSlots.forEach(slot => {
+            slot.addEventListener('click', () => {
+                if (!slot.classList.contains('has-token') && earnedTokens < maxTokens) { // Only add if the slot is empty AND not maxed out
+                    addToken();
+                }
+            });
+            // Also enable keyboard interaction for accessibility
+            slot.addEventListener('keydown', (e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !slot.classList.contains('has-token') && earnedTokens < maxTokens) { // Enter or Space key
+                    e.preventDefault(); // Prevent scrolling if spacebar is pressed
+                    addToken();
+                }
+            });
+        });
+
+        resetBoardBtn.addEventListener('click', initializeBoard);
+        toggleMusicBtn.addEventListener('click', toggleMusic); // New music toggle button listener
+        
+        rewardThemeSelector.addEventListener('change', () => {
+            // Update emojis on already earned tokens if the theme changes mid-way
+            const selectedEmoji = rewardEmojis[rewardThemeSelector.value];
+            for (let i = 0; i < earnedTokens; i++) {
+                const tokenIcon = tokenSlots[i].querySelector('.token-icon');
+                if (tokenIcon) {
+                    tokenIcon.textContent = selectedEmoji;
+                }
+            }
+        });
+
+        // Child Name input: Update title on every input, and toggle visibility on blur or Enter
+        childNameInput.addEventListener('input', updateAppTitle);
+        childNameInput.addEventListener('blur', toggleNameInputVisibility); // Hide on blur
+        childNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent new line or form submission
+                childNameInput.blur(); // Trigger blur to hide input field
+            }
+        });
+
+        // Edit Name button listener
+        editNameBtn.addEventListener('click', () => {
+            childNameSection.classList.remove('hidden'); // Show input
+            editNameBtn.classList.add('hidden'); // Hide edit button
+            childNameInput.focus(); // Focus the input for convenience
+        });
+
+        // Initial setup on page load
+        window.addEventListener('load', () => {
+            const storedName = localStorage.getItem('childName');
+            if (storedName) {
+                childNameInput.value = storedName;
+            }
+            // Update title and toggle visibility based on initial/stored value
+            updateAppTitle();
+            toggleNameInputVisibility(); 
+            initializeBoard(); // Initialize board
+        });
+
+    </script>
+</body>
+</html>
