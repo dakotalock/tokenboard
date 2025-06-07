@@ -188,121 +188,174 @@
         };
 
         // --- Audio Synthesizers (Tone.js) ---
-        // Pop sound (subtle percussive click)
-        const popSynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: "square" }, // A bit sharper
-            envelope: {
-                attack: 0.001,
-                decay: 0.05,
-                sustain: 0,
-                release: 0.05
-            }
-        }).toDestination();
 
-        // Dopamine hit "ding" sound
-        const dingSynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: "sine" }, // Smooth, bell-like
-            envelope: {
-                attack: 0.01,
-                decay: 0.2,
-                sustain: 0,
-                release: 0.3
-            }
-        }).toDestination();
+        // Pop sound (subtle percussive click)
 
-        // Complex synth for 'gold chime' sound
-        const goldChimeSynth = new Tone.Sampler({
-            urls: {
-                "C4": "https://tonejs.github.io/audio/salamander/808_A1.mp3", // Using a simple sample for chime effect
-            },
-            onload: () => console.log('Chime sample loaded.'),
-        }).toDestination();
+        const popSynth = new Tone.PolySynth(Tone.Synth, {
+
+            oscillator: { type: "square" }, // A bit sharper
+
+            envelope: {
+
+                attack: 0.001,
+
+                decay: 0.05,
+
+                sustain: 0,
+
+                release: 0.05
+
+            }
+
+        }).toDestination();
 
 
-        // --- Enhanced "Song of Healing" Melody (Tone.js) ---
-        const healingMelodySequenceNotes = [
-            // Phrase 1 (D minor)
-            { time: '0:0:0', note: 'D4', duration: '4n' }, { time: '0:0:1', note: 'A3', duration: '4n' },
-            { time: '0:0:2', note: 'G3', duration: '4n' }, { time: '0:0:3', note: 'D4', duration: '4n' },
-            { time: '0:1:0', note: 'A3', duration: '4n' }, { time: '0:1:1', note: 'G3', duration: '4n' },
-            { time: '0:1:2', note: 'D4', duration: '4n' }, { time: '0:1:3', note: 'A3', duration: '4n' },
 
-            // Phrase 2 (C minor relative)
-            { time: '0:2:0', note: 'C4', duration: '4n' }, { time: '0:2:1', note: 'G3', duration: '4n' },
-            { time: '0:2:2', note: 'F3', duration: '4n' }, { time: '0:2:3', note: 'C4', duration: '4n' },
-            { time: '0:3:0', note: 'G3', duration: '4n' }, { time: '0:3:1', note: 'F3', duration: '4n' },
-            { time: '0:3:2', note: 'C4', duration: '4n' }, { time: '0:3:3', note: 'G3', duration: '4n' },
+        // Dopamine hit "ding" sound
 
-            // Phrase 3 (Back to D minor, slightly varied)
-            { time: '0:4:0', note: 'D4', duration: '4n' }, { time: '0:4:1', note: 'A3', duration: '4n' },
-            { time: '0:4:2', note: 'G3', duration: '4n' }, { time: '0:4:3', note: 'D4', duration: '4n' },
-            { time: '0:5:0', note: 'A3', duration: '4n' }, { time: '0:5:1', note: 'G3', duration: '4n' },
-            { time: '0:5:2', note: 'D4', duration: '4n' }, { time: '0:5:3', note: 'A3', duration: '4n' },
+        const dingSynth = new Tone.PolySynth(Tone.Synth, {
 
-            // Phrase 4 (E-flat major/minor feel)
-            { time: '0:6:0', note: 'Eb4', duration: '4n' }, { time: '0:6:1', note: 'Bb3', duration: '4n' },
-            { time: '0:6:2', note: 'Ab3', duration: '4n' }, { time: '0:6:3', note: 'Eb4', duration: '4n' },
-            { time: '0:7:0', note: 'Bb3', duration: '4n' }, { time: '0:7:1', note: 'Ab3', duration: '4n' },
-            { time: '0:7:2', note: 'Eb4', duration: '4n' }, { time: '0:7:3', note: 'Bb3', duration: '4n' },
+            oscillator: { type: "sine" }, // Smooth, bell-like
 
-            // Phrase 5 (Resolution back to D minor for loop)
-            { time: '0:8:0', note: 'D4', duration: '2n' },
-            { time: '0:8:2', note: 'G4', duration: '2n' },
-            { time: '0:9:0', note: 'A4', duration: '1n' },
-            { time: '0:10:0', note: 'D5', duration: '1n' } // Higher D for final resolution
-        ];
+            envelope: {
 
-        const healingMelodySynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: "sine" }, // Smooth, clear tone
-            envelope: {
-                attack: 0.1,
-                decay: 0.5,
-                sustain: 0.2,
-                release: 1
-            }
-        }).toDestination();
+                attack: 0.01,
 
-        const healingSequence = new Tone.Sequence(
-            (time, noteObj) => {
-                healingMelodySynth.triggerAttackRelease(noteObj.note, noteObj.duration, time);
-            },
-            healingMelodySequenceNotes
-        );
-        healingSequence.loop = true; // Loop the sequence indefinitely
-        Tone.Transport.bpm.value = 100; // Tempo setting
-        healingSequence.loopEnd = '11m'; // Set loop end to match sequence duration, 11 measures at 100bpm.
+                decay: 0.2,
+
+                sustain: 0,
+
+                release: 0.3
+
+            }
+
+        }).toDestination();
 
 
-        // --- Confetti Configuration ---
-        const tokenConfetti = (originX, originY, colors) => {
-            confetti({
-                particleCount: 50,
-                spread: 70,
-                origin: { x: originX, y: originY },
-                colors: colors
-            });
-        };
 
-        const completionConfetti = () => {
-            const duration = 15 * 1000;
-            const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-            const colors = ['#FFD700', '#DAA520', '#B8860B']; // Gold shades
+        // Complex synth for 'gold chime' sound
 
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
+        const goldChimeSynth = new Tone.Sampler({
 
-            const interval = setInterval(function() {
-                const timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-                const particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: colors }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: colors }));
-            }, 250);
-        };
+            urls: {
+
+                "C4": "https://tonejs.github.io/audio/salamander/808_A1.mp3", // Using a simple sample for chime effect
+
+            },
+
+            onload: () => console.log('Chime sample loaded.'),
+
+        }).toDestination();
+
+
+
+
+
+        // --- Enhanced "Song of Healing" Melody (Tone.js) ---
+
+        const healingMelodySequenceNotes = [
+
+            // Phrase 1 (D minor)
+
+            { time: '0:0:0', note: 'D4', duration: '4n' }, { time: '0:0:1', note: 'A3', duration: '4n' },
+
+            { time: '0:0:2', note: 'G3', duration: '4n' }, { time: '0:0:3', note: 'D4', duration: '4n' },
+
+            { time: '0:1:0', note: 'A3', duration: '4n' }, { time: '0:1:1', note: 'G3', duration: '4n' },
+
+            { time: '0:1:2', note: 'D4', duration: '4n' }, { time: '0:1:3', note: 'A3', duration: '4n' },
+
+
+
+            // Phrase 2 (C minor relative)
+
+            { time: '0:2:0', note: 'C4', duration: '4n' }, { time: '0:2:1', note: 'G3', duration: '4n' },
+
+            { time: '0:2:2', note: 'F3', duration: '4n' }, { time: '0:2:3', note: 'C4', duration: '4n' },
+
+            { time: '0:3:0', note: 'G3', duration: '4n' }, { time: '0:3:1', note: 'F3', duration: '4n' },
+
+            { time: '0:3:2', note: 'C4', duration: '4n' }, { time: '0:3:3', note: 'G3', duration: '4n' },
+
+
+
+            // Phrase 3 (Back to D minor, slightly varied)
+
+            { time: '0:4:0', note: 'D4', duration: '4n' }, { time: '0:4:1', note: 'A3', duration: '4n' },
+
+            { time: '0:4:2', note: 'G3', duration: '4n' }, { time: '0:4:3', note: 'D4', duration: '4n' },
+
+            { time: '0:5:0', note: 'A3', duration: '4n' }, { time: '0:5:1', note: 'G3', duration: '4n' },
+
+            { time: '0:5:2', note: 'D4', duration: '4n' }, { time: '0:5:3', note: 'A3', duration: '4n' },
+
+
+
+            // Phrase 4 (E-flat major/minor feel)
+
+            { time: '0:6:0', note: 'Eb4', duration: '4n' }, { time: '0:6:1', note: 'Bb3', duration: '4n' },
+
+            { time: '0:6:2', note: 'Ab3', duration: '4n' }, { time: '0:6:3', note: 'Eb4', duration: '4n' },
+
+            { time: '0:7:0', note: 'Bb3', duration: '4n' }, { time: '0:7:1', note: 'Ab3', duration: '4n' },
+
+            { time: '0:7:2', note: 'Eb4', duration: '4n' }, { time: '0:7:3', note: 'Bb3', duration: '4n' },
+
+
+
+            // Phrase 5 (Resolution back to D minor for loop)
+
+            { time: '0:8:0', note: 'D4', duration: '2n' },
+
+            { time: '0:8:2', note: 'G4', duration: '2n' },
+
+            { time: '0:9:0', note: 'A4', duration: '1n' },
+
+            { time: '0:10:0', note: 'D5', duration: '1n' } // Higher D for final resolution
+
+        ];
+
+
+
+        const healingMelodySynth = new Tone.PolySynth(Tone.Synth, {
+
+            oscillator: { type: "sine" }, // Smooth, clear tone
+
+            envelope: {
+
+                attack: 0.1,
+
+                decay: 0.5,
+
+                sustain: 0.2,
+
+                release: 1
+
+            }
+
+        }).toDestination();
+
+
+
+        const healingSequence = new Tone.Sequence(
+
+            (time, noteObj) => {
+
+                healingMelodySynth.triggerAttackRelease(noteObj.note, noteObj.duration, time);
+
+            },
+
+            healingMelodySequenceNotes
+
+        );
+
+        healingSequence.loop = true; // Loop the sequence indefinitely
+
+        Tone.Transport.bpm.value = 100; // Tempo setting
+
+        Tone.Transport.loop = false; // IMPORTANT: Let the sequence manage its own loop, not the global transport.
+
+        // Tone.Transport.start() will now be called by the toggleMusic function.
 
 
         // --- Functions ---
