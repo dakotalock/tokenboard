@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN for responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for Inter font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Tone.js CDN for programmatic sound generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <!-- Confetti library CDN -->
@@ -110,15 +110,13 @@
             <label for="rewardTheme" class="block text-lg font-medium text-gray-700 mb-2">Choose Reward:</label>
             <select id="rewardTheme" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">
                 <option value="spider-man">Spider Man 🕷️</option>
+                <option value="ghost">Ghost 👻</option>
                 <option value="space-ship">Space Ship 🚀</option>
                 <option value="luxury-car">Luxury Car 🏎️</option>
                 <option value="dinosaur">Dinosaur 🦖</option>
                 <option value="unicorn">Unicorn 🦄</option>
                 <option value="robot">Robot 🤖</option>
                 <option value="rocket">Rocket 🚀</option>
-                <option value="crocodile">Crocodile 🐊</option>
-                <option value="snake">Snake 🐍</option>
-                <option value="ghost">Ghost 👻</option>
             </select>
         </div>
 
@@ -176,186 +174,132 @@
         let isMusicPlaying = false; // Track music state
         const rewardEmojis = {
             'spider-man': '🕷️',
+            'ghost': '👻',
             'space-ship': '🚀',
             'luxury-car': '🏎️',
             'dinosaur': '🦖',
             'unicorn': '🦄',
             'robot': '🤖',
-            'rocket': '🚀',
-            'crocodile': '🐊',
-            'snake': '🐍',
-            'ghost': '👻'
+            'rocket': '🚀'
         };
 
         // --- Audio Synthesizers (Tone.js) ---
-
-        // Pop sound (subtle percussive click)
-
-        const popSynth = new Tone.PolySynth(Tone.Synth, {
-
-            oscillator: { type: "square" }, // A bit sharper
-
-            envelope: {
-
-                attack: 0.001,
-
-                decay: 0.05,
-
-                sustain: 0,
-
-                release: 0.05
-
-            }
-
-        }).toDestination();
-
-
-
-        // Dopamine hit "ding" sound
-
-        const dingSynth = new Tone.PolySynth(Tone.Synth, {
-
-            oscillator: { type: "sine" }, // Smooth, bell-like
-
-            envelope: {
-
-                attack: 0.01,
-
-                decay: 0.2,
-
-                sustain: 0,
-
-                release: 0.3
-
-            }
-
-        }).toDestination();
-
-
-
-        // Complex synth for 'gold chime' sound
-
-        const goldChimeSynth = new Tone.Sampler({
-
-            urls: {
-
-                "C4": "https://tonejs.github.io/audio/salamander/808_A1.mp3", // Using a simple sample for chime effect
-
-            },
-
-            onload: () => console.log('Chime sample loaded.'),
-
-        }).toDestination();
-
-
-
-
-
-        // --- Enhanced "Song of Healing" Melody (Tone.js) ---
-
-        const healingMelodySequenceNotes = [
-
-            // Phrase 1 (D minor)
-
-            { time: '0:0:0', note: 'D4', duration: '4n' }, { time: '0:0:1', note: 'A3', duration: '4n' },
-
-            { time: '0:0:2', note: 'G3', duration: '4n' }, { time: '0:0:3', note: 'D4', duration: '4n' },
-
-            { time: '0:1:0', note: 'A3', duration: '4n' }, { time: '0:1:1', note: 'G3', duration: '4n' },
-
-            { time: '0:1:2', note: 'D4', duration: '4n' }, { time: '0:1:3', note: 'A3', duration: '4n' },
-
-
-
-            // Phrase 2 (C minor relative)
-
-            { time: '0:2:0', note: 'C4', duration: '4n' }, { time: '0:2:1', note: 'G3', duration: '4n' },
-
-            { time: '0:2:2', note: 'F3', duration: '4n' }, { time: '0:2:3', note: 'C4', duration: '4n' },
-
-            { time: '0:3:0', note: 'G3', duration: '4n' }, { time: '0:3:1', note: 'F3', duration: '4n' },
-
-            { time: '0:3:2', note: 'C4', duration: '4n' }, { time: '0:3:3', note: 'G3', duration: '4n' },
-
-
-
-            // Phrase 3 (Back to D minor, slightly varied)
-
-            { time: '0:4:0', note: 'D4', duration: '4n' }, { time: '0:4:1', note: 'A3', duration: '4n' },
-
-            { time: '0:4:2', note: 'G3', duration: '4n' }, { time: '0:4:3', note: 'D4', duration: '4n' },
-
-            { time: '0:5:0', note: 'A3', duration: '4n' }, { time: '0:5:1', note: 'G3', duration: '4n' },
-
-            { time: '0:5:2', note: 'D4', duration: '4n' }, { time: '0:5:3', note: 'A3', duration: '4n' },
-
-
-
-            // Phrase 4 (E-flat major/minor feel)
-
-            { time: '0:6:0', note: 'Eb4', duration: '4n' }, { time: '0:6:1', note: 'Bb3', duration: '4n' },
-
-            { time: '0:6:2', note: 'Ab3', duration: '4n' }, { time: '0:6:3', note: 'Eb4', duration: '4n' },
-
-            { time: '0:7:0', note: 'Bb3', duration: '4n' }, { time: '0:7:1', note: 'Ab3', duration: '4n' },
-
-            { time: '0:7:2', note: 'Eb4', duration: '4n' }, { time: '0:7:3', note: 'Bb3', duration: '4n' },
-
-
-
-            // Phrase 5 (Resolution back to D minor for loop)
-
-            { time: '0:8:0', note: 'D4', duration: '2n' },
-
-            { time: '0:8:2', note: 'G4', duration: '2n' },
-
-            { time: '0:9:0', note: 'A4', duration: '1n' },
-
-            { time: '0:10:0', note: 'D5', duration: '1n' } // Higher D for final resolution
-
-        ];
-
-
-
-        const healingMelodySynth = new Tone.PolySynth(Tone.Synth, {
-
-            oscillator: { type: "sine" }, // Smooth, clear tone
-
-            envelope: {
-
-                attack: 0.1,
-
-                decay: 0.5,
-
-                sustain: 0.2,
-
-                release: 1
-
-            }
-
-        }).toDestination();
-
-
-
-        const healingSequence = new Tone.Sequence(
-
-            (time, noteObj) => {
-
-                healingMelodySynth.triggerAttackRelease(noteObj.note, noteObj.duration, time);
-
-            },
-
-            healingMelodySequenceNotes
-
-        );
-
-        healingSequence.loop = true; // Loop the sequence indefinitely
-
-        Tone.Transport.bpm.value = 100; // Tempo setting
-
-        Tone.Transport.loop = false; // IMPORTANT: Let the sequence manage its own loop, not the global transport.
-
-        // Tone.Transport.start() will now be called by the toggleMusic function.
+        // Pop sound (subtle percussive click)
+        const popSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "square" }, // A bit sharper
+            envelope: {
+                attack: 0.001,
+                decay: 0.05,
+                sustain: 0,
+                release: 0.05
+            }
+        }).toDestination();
+
+        // Dopamine hit "ding" sound
+        const dingSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" }, // Smooth, bell-like
+            envelope: {
+                attack: 0.01,
+                decay: 0.2,
+                sustain: 0,
+                release: 0.3
+            }
+        }).toDestination();
+
+        // Complex synth for 'gold chime' sound
+        const goldChimeSynth = new Tone.Sampler({
+            urls: {
+                "C4": "https://tonejs.github.io/audio/salamander/808_A1.mp3", // Using a simple sample for chime effect
+            },
+            onload: () => console.log('Chime sample loaded.'),
+        }).toDestination();
+
+
+        // --- Enhanced "Song of Healing" Melody (Tone.js) ---
+        const healingMelodySequenceNotes = [
+            // Phrase 1 (D minor)
+            { time: '0:0:0', note: 'D4', duration: '4n' }, { time: '0:0:1', note: 'A3', duration: '4n' },
+            { time: '0:0:2', note: 'G3', duration: '4n' }, { time: '0:0:3', note: 'D4', duration: '4n' },
+            { time: '0:1:0', note: 'A3', duration: '4n' }, { time: '0:1:1', note: 'G3', duration: '4n' },
+            { time: '0:1:2', note: 'D4', duration: '4n' }, { time: '0:1:3', note: 'A3', duration: '4n' },
+
+            // Phrase 2 (C minor relative)
+            { time: '0:2:0', note: 'C4', duration: '4n' }, { time: '0:2:1', note: 'G3', duration: '4n' },
+            { time: '0:2:2', note: 'F3', duration: '4n' }, { time: '0:2:3', note: 'C4', duration: '4n' },
+            { time: '0:3:0', note: 'G3', duration: '4n' }, { time: '0:3:1', note: 'F3', duration: '4n' },
+            { time: '0:3:2', note: 'C4', duration: '4n' }, { time: '0:3:3', note: 'G3', duration: '4n' },
+
+            // Phrase 3 (Back to D minor, slightly varied)
+            { time: '0:4:0', note: 'D4', duration: '4n' }, { time: '0:4:1', note: 'A3', duration: '4n' },
+            { time: '0:4:2', note: 'G3', duration: '4n' }, { time: '0:4:3', note: 'D4', duration: '4n' },
+            { time: '0:5:0', note: 'A3', duration: '4n' }, { time: '0:5:1', note: 'G3', duration: '4n' },
+            { time: '0:5:2', note: 'D4', duration: '4n' }, { time: '0:5:3', note: 'A3', duration: '4n' },
+
+            // Phrase 4 (E-flat major/minor feel)
+            { time: '0:6:0', note: 'Eb4', duration: '4n' }, { time: '0:6:1', note: 'Bb3', duration: '4n' },
+            { time: '0:6:2', note: 'Ab3', duration: '4n' }, { time: '0:6:3', note: 'Eb4', duration: '4n' },
+            { time: '0:7:0', note: 'Bb3', duration: '4n' }, { time: '0:7:1', note: 'Ab3', duration: '4n' },
+            { time: '0:7:2', note: 'Eb4', duration: '4n' }, { time: '0:7:3', note: 'Bb3', duration: '4n' },
+
+            // Phrase 5 (Resolution back to D minor for loop)
+            { time: '0:8:0', note: 'D4', duration: '2n' },
+            { time: '0:8:2', note: 'G4', duration: '2n' },
+            { time: '0:9:0', note: 'A4', duration: '1n' },
+            { time: '0:10:0', note: 'D5', duration: '1n' } // Higher D for final resolution
+        ];
+
+        const healingMelodySynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" }, // Smooth, clear tone
+            envelope: {
+                attack: 0.1,
+                decay: 0.5,
+                sustain: 0.2,
+                release: 1
+            }
+        }).toDestination();
+
+        const healingSequence = new Tone.Sequence(
+            (time, noteObj) => {
+                healingMelodySynth.triggerAttackRelease(noteObj.note, noteObj.duration, time);
+            },
+            healingMelodySequenceNotes
+        );
+        healingSequence.loop = true; // Loop the sequence indefinitely
+        Tone.Transport.bpm.value = 100; // Tempo setting
+        Tone.Transport.loop = false; // IMPORTANT: Let the sequence manage its own loop, not the global transport.
+        // Tone.Transport.start() will now be called by the toggleMusic function.
+
+
+        // --- Confetti Configuration ---
+        const tokenConfetti = (originX, originY, colors) => {
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { x: originX, y: originY },
+                colors: colors
+            });
+        };
+
+        const completionConfetti = () => {
+            const duration = 15 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            const colors = ['#FFD700', '#DAA520', '#B8860B']; // Gold shades
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: colors }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: colors }));
+            }, 250);
+        };
 
 
         // --- Functions ---
@@ -392,14 +336,15 @@
 
         /**
          * Updates the app title based on the child's name input.
-         * Note: Removed localStorage usage for name persistence as per user request.
          */
         function updateAppTitle() {
             let name = childNameInput.value.trim();
             if (name) {
                 appTitle.textContent = `${name}'s Token Board`;
+                localStorage.setItem('childName', name); // Save to local storage
             } else {
                 appTitle.textContent = 'My Token Board';
+                localStorage.removeItem('childName'); // Remove from local storage if empty
             }
         }
 
@@ -482,7 +427,7 @@
             // Ensure the audio context is active. This *must* be triggered by a user interaction.
             if (Tone.context.state !== 'running') {
                 await Tone.start();
-                console.log('Audio context activated by music toggle button.');
+                console.log('Audio context started by music toggle button.');
             }
 
             if (isMusicPlaying) {
@@ -494,9 +439,8 @@
                 console.log('Music stopped.');
             } else {
                 // Start music
-                Tone.Transport.start(); // Start the global transport (if not already started/suspended)
-                healingSequence.start(0); // Schedule sequence to start at 0 of the transport timeline
-                
+                Tone.Transport.start(); // Start the global transport
+                healingSequence.start(0); // Schedule sequence to start at the beginning of the transport timeline
                 musicIcon.classList.replace('fa-volume-mute', 'fa-music');
                 isMusicPlaying = true;
                 console.log('Music started.');
@@ -521,7 +465,7 @@
         });
 
         resetBoardBtn.addEventListener('click', initializeBoard);
-        toggleMusicBtn.addEventListener('click', toggleMusic); // Music toggle button listener
+        toggleMusicBtn.addEventListener('click', toggleMusic); // New music toggle button listener
         
         rewardThemeSelector.addEventListener('change', () => {
             // Update emojis on already earned tokens if the theme changes mid-way
@@ -553,13 +497,18 @@
 
         // Initial setup on page load
         window.addEventListener('load', () => {
-            // Name should always start fresh on reload.
-            childNameInput.value = ''; 
-            updateAppTitle(); // Set title to default "My Token Board" initially
-            toggleNameInputVisibility(); // Ensure name input is visible initially
+            const storedName = localStorage.getItem('childName');
+            if (storedName) {
+                childNameInput.value = storedName;
+            }
+            // Update title and toggle visibility based on initial/stored value
+            updateAppTitle();
+            toggleNameInputVisibility(); 
             initializeBoard(); // Initialize board
         });
 
     </script>
+</body>
+</html>
 </body>
 </html>
