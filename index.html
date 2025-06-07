@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN for responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for Inter font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700&display=swap" rel="stylesheet">
     <!-- Tone.js CDN for programmatic sound generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <!-- Confetti library CDN -->
@@ -104,7 +104,6 @@
     </header>
 
     <!-- Main Content Area: Token Board and Controls -->
-    <!-- Main Content Area: Token Board and Controls -->
     <main class="flex flex-col items-center flex-grow w-full max-w-4xl px-4">
         <!-- Reward Theme Selector -->
         <div class="mb-8 p-4 bg-white rounded-xl shadow-lg border border-gray-200">
@@ -177,13 +176,15 @@
         let isMusicPlaying = false; // Track music state
         const rewardEmojis = {
             'spider-man': '🕷️',
-            'fire-truck': '�',
             'space-ship': '🚀',
             'luxury-car': '🏎️',
             'dinosaur': '🦖',
             'unicorn': '🦄',
             'robot': '🤖',
-            'rocket': '🚀'
+            'rocket': '🚀',
+            'crocodile': '🐊',
+            'snake': '🐍',
+            'ghost': '👻'
         };
 
         // --- Audio Synthesizers (Tone.js) ---
@@ -269,8 +270,7 @@
         );
         healingSequence.loop = true; // Loop the sequence indefinitely
         Tone.Transport.bpm.value = 100; // Tempo setting
-        Tone.Transport.loop = false; // IMPORTANT: Let the sequence manage its own loop, not the global transport.
-        // Tone.Transport.start() will now be called by the toggleMusic function.
+        healingSequence.loopEnd = '11m'; // Set loop end to match sequence duration, 11 measures at 100bpm.
 
 
         // --- Confetti Configuration ---
@@ -339,15 +339,14 @@
 
         /**
          * Updates the app title based on the child's name input.
+         * Note: Removed localStorage usage for name persistence as per user request.
          */
         function updateAppTitle() {
             let name = childNameInput.value.trim();
             if (name) {
                 appTitle.textContent = `${name}'s Token Board`;
-                localStorage.setItem('childName', name); // Save to local storage
             } else {
                 appTitle.textContent = 'My Token Board';
-                localStorage.removeItem('childName'); // Remove from local storage if empty
             }
         }
 
@@ -430,7 +429,7 @@
             // Ensure the audio context is active. This *must* be triggered by a user interaction.
             if (Tone.context.state !== 'running') {
                 await Tone.start();
-                console.log('Audio context started by music toggle button.');
+                console.log('Audio context activated by music toggle button.');
             }
 
             if (isMusicPlaying) {
@@ -442,8 +441,9 @@
                 console.log('Music stopped.');
             } else {
                 // Start music
-                Tone.Transport.start(); // Start the global transport
-                healingSequence.start(0); // Schedule sequence to start at the beginning of the transport timeline
+                Tone.Transport.start(); // Start the global transport (if not already started/suspended)
+                healingSequence.start(0); // Schedule sequence to start at 0 of the transport timeline
+                
                 musicIcon.classList.replace('fa-volume-mute', 'fa-music');
                 isMusicPlaying = true;
                 console.log('Music started.');
@@ -468,7 +468,7 @@
         });
 
         resetBoardBtn.addEventListener('click', initializeBoard);
-        toggleMusicBtn.addEventListener('click', toggleMusic); // New music toggle button listener
+        toggleMusicBtn.addEventListener('click', toggleMusic); // Music toggle button listener
         
         rewardThemeSelector.addEventListener('change', () => {
             // Update emojis on already earned tokens if the theme changes mid-way
@@ -500,13 +500,10 @@
 
         // Initial setup on page load
         window.addEventListener('load', () => {
-            const storedName = localStorage.getItem('childName');
-            if (storedName) {
-                childNameInput.value = storedName;
-            }
-            // Update title and toggle visibility based on initial/stored value
-            updateAppTitle();
-            toggleNameInputVisibility(); 
+            // Name should always start fresh on reload.
+            childNameInput.value = ''; 
+            updateAppTitle(); // Set title to default "My Token Board" initially
+            toggleNameInputVisibility(); // Ensure name input is visible initially
             initializeBoard(); // Initialize board
         });
 
